@@ -32,5 +32,9 @@
         <members>*</members>
         <name>StaticResource</name>
     </types>
+    <types>
+        <members>Account.Total_Amount__c</members>
+        <name>CustomField</name>
+    </types>
     <version>49.0</version>
 </Package>
