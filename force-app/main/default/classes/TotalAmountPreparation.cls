@@ -2,7 +2,7 @@ public with sharing class TotalAmountPreparation implements Database.Batchable<s
     public static Map<Id, Account> resultedAccounts = new Map<Id, Account>();
 
     public Database.QueryLocator start(Database.BatchableContext bc) {
-        reutrn Database.getQueryLocator('SELECT Id, Total_Amount__c, ParentId, ' +
+        return Database.getQueryLocator('SELECT Id, Total_Amount__c, ParentId, ' +
                                          + '(SELECT Amount, StageName FROM Opportunities WHERE StageName = \'Closed Won\') ' +
                                         + 'FROM Account');
     }
