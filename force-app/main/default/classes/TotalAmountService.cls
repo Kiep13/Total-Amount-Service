@@ -2,15 +2,8 @@ public with sharing class TotalAmountService implements Database.Batchable<sObje
 
     public Map<Id, Account> resultAccount;
 
-    public TotalAmountService() {
-        resultAccount = new Map<Id, Account>();
-        List<Account> accounts = [SELECT Id, Total_Amount__c, ParentId, 
-                                    (SELECT Amount, StageName FROM Opportunities WHERE StageName = 'Closed Won')
-                                    FROM Account];
-        for(Account account : accounts) {
-            account.Total_Amount__c = 0;
-            resultAccount.put(account.Id, account);
-        }
+    public TotalAmountService(Map<Id, Account> accounts) {
+        resultAccount = accounts;
     }
 
     public List<Account> start(Database.BatchableContext bc) {
