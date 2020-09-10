@@ -51,7 +51,7 @@ public with sharing class TotalAmountServiceTest {
     public static void checkTotalAmount() {
 
         Test.startTest();
-        TotalAmountService totalAmountService = new TotalAmountService();
+        TotalAmountPreparation totalAmountService = new TotalAmountPreparation();
         Id batchId = Database.executeBatch(totalAmountService);
         Test.stopTest();
 

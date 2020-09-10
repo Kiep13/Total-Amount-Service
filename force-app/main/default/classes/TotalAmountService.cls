@@ -1,44 +1,35 @@
 public with sharing class TotalAmountService implements Database.Batchable<sObject>, Database.Stateful {
 
-    public Map<Id, Account> resultAccount;
+    public Map<Id, AccountHierarchy> hierarchy;
 
-    public TotalAmountService(Map<Id, Account> accounts) {
-        resultAccount = accounts;
+    public TotalAmountService(Map<Id, AccountHierarchy> accounts) {
+        hierarchy = accounts;
     }
 
-    public List<Account> start(Database.BatchableContext bc) {
-        return resultAccount.values();
+    public Database.QueryLocator start(Database.BatchableContext bc) {
+        return Database.getQueryLocator('SELECT Id, Total_Amount__c, ParentId, ' +
+                    + '(SELECT Amount, StageName FROM Opportunities WHERE StageName = \'Closed Won\') ' +
+                + 'FROM Account');
     }
 
     public void execute(Database.BatchableContext bc, List<Account> accounts){
-        System.debug(resultAccount);
 
         for (Account account : accounts) {
 
-            Account storedAccount = resultAccount.get(account.Id);
-
-            Decimal amount = 0;
-            for(Opportunity opportunity : storedAccount.Opportunities) {
-                amount += opportunity.Amount;
+            if(hierarchy.containsKey(account.Id)) {
+                AccountHierarchy accountHierarchy = hierarchy.get(account.Id);
+                accountHierarchy.solveTotalAmount();
             }
-            storedAccount.Total_Amount__c += amount; 
-            updateParentAmount(storedAccount, amount);
-            resultAccount.put(account.Id, storedAccount);  
         }
 
     }
 
     public void finish(Database.BatchableContext bc){
-        upsert resultAccount.values();
-    }
-
-    public void updateParentAmount(Account account, Decimal amount) {
-        if(account.ParentId != null) {
-            Account parentAccount = (Account)resultAccount.get(account.ParentId);
-            parentAccount.Total_Amount__c += amount;
-            updateParentAmount(parentAccount, amount);
-            resultAccount.put(account.ParentId, parentAccount); 
+        List<Account> results = new List<Account>();
+        for(AccountHierarchy node: hierarchy.values()) {
+            results.add(node.account);
+            results.addAll(node.getChilrens());
         }
-        resultAccount.put(account.Id, account); 
+        upsert results;
     }
 }
