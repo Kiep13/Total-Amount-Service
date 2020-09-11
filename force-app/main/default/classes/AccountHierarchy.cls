@@ -8,17 +8,17 @@ public with sharing class AccountHierarchy {
         this.childrens = new List<AccountHierarchy>();
     }
 
-    public Decimal solveTotalAmount() {
-        if(account.Total_Amount__c == 0) {
-            for(Opportunity opportunity : account.Opportunities) {
-                account.Total_Amount__c += opportunity.Amount;
-            }
-            for(AccountHierarchy children: childrens) {
-                account.Total_Amount__c += children.solveTotalAmount();
-            }
-        } 
-        return account.Total_Amount__c;
-    }
+    // public Decimal solveTotalAmount() {
+    //     if(account.Total_Amount__c == 0) {
+    //         for(Opportunity opportunity : account.Opportunities) {
+    //             account.Total_Amount__c += opportunity.Amount;
+    //         }
+    //         for(AccountHierarchy children: childrens) {
+    //             account.Total_Amount__c += children.solveTotalAmount();
+    //         }
+    //     } 
+    //     return account.Total_Amount__c;
+    // }
 
     public List<Account> getChilrens() {
         List<Account> accounts = new List<Account>();

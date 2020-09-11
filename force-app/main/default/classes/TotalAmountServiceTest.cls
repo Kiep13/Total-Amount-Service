@@ -1,13 +1,14 @@
 @IsTest
 public with sharing class TotalAmountServiceTest {
     
-    
     public static Decimal FIRST_ACCOUNT_AMOUNT = 1800;
     public static Decimal SECOND_ACCOUNT_AMOUNT = 1500;
-    public static Decimal THIRD_ACCOUNT_AMOUNT = 1200;
     public static Decimal FOURTH_ACCOUNT_AMOUNT = 900;
-    public static Decimal FIFTH_ACCOUNT_AMOUNT = 600;
     public static Decimal SIXTH_ACCOUNT_AMOUNT = 300;
+    
+    public static Decimal THIRD_ACCOUNT_AMOUNT = 600;
+    public static Decimal FIFTH_ACCOUNT_AMOUNT = 1200;
+
     public static String INVALID_AMOUNT_MESSAGE = 'Invalid total amount of account';
 
     @TestSetup
@@ -23,10 +24,10 @@ public with sharing class TotalAmountServiceTest {
         insert accounts;
 
         accounts[1].ParentId = accounts[0].Id;
-        accounts[2].ParentId = accounts[1].Id;
-        accounts[3].ParentId = accounts[2].Id;
-        accounts[4].ParentId = accounts[3].Id;
-        accounts[5].ParentId = accounts[4].Id;
+        accounts[4].ParentId = accounts[1].Id;
+        accounts[3].ParentId = accounts[4].Id;
+        accounts[2].ParentId = accounts[3].Id;
+        accounts[5].ParentId = accounts[2].Id;
 
         upsert accounts;
 
