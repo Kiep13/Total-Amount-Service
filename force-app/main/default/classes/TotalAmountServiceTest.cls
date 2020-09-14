@@ -6,8 +6,8 @@ public with sharing class TotalAmountServiceTest {
     public static Decimal FOURTH_ACCOUNT_AMOUNT = 900;
     public static Decimal SIXTH_ACCOUNT_AMOUNT = 300;
     
-    public static Decimal THIRD_ACCOUNT_AMOUNT = 600;
-    public static Decimal FIFTH_ACCOUNT_AMOUNT = 1200;
+    public static Decimal THIRD_ACCOUNT_AMOUNT = 1200;
+    public static Decimal FIFTH_ACCOUNT_AMOUNT = 600;
 
     public static String INVALID_AMOUNT_MESSAGE = 'Invalid total amount of account';
 
@@ -23,11 +23,15 @@ public with sharing class TotalAmountServiceTest {
         
         insert accounts;
 
-        accounts[1].ParentId = accounts[0].Id;
-        accounts[4].ParentId = accounts[1].Id;
-        accounts[3].ParentId = accounts[4].Id;
-        accounts[2].ParentId = accounts[3].Id;
-        accounts[5].ParentId = accounts[2].Id;
+        for(Integer i = 0; i < accounts.size()/2 - 1; i++) {
+            accounts[i].ParentId = accounts[i + 1].Id;
+        }
+
+        for(Integer i = accounts.size()/2; i < accounts.size() - 1; i++) {
+            accounts[i].ParentId = accounts[i + 1].Id;
+        }
+
+        accounts[accounts.size() - 1].ParentId = accounts[0].Id;
 
         upsert accounts;
 
@@ -58,11 +62,14 @@ public with sharing class TotalAmountServiceTest {
 
         List<Account> accounts = [SELECT Total_Amount__c FROM Account];
 
-        System.assertEquals(FIRST_ACCOUNT_AMOUNT, accounts[0].Total_Amount__c, INVALID_AMOUNT_MESSAGE);
-        System.assertEquals(SECOND_ACCOUNT_AMOUNT, accounts[1].Total_Amount__c, INVALID_AMOUNT_MESSAGE);
-        System.assertEquals(THIRD_ACCOUNT_AMOUNT, accounts[2].Total_Amount__c, INVALID_AMOUNT_MESSAGE);
-        System.assertEquals(FOURTH_ACCOUNT_AMOUNT, accounts[3].Total_Amount__c, INVALID_AMOUNT_MESSAGE);
-        System.assertEquals(FIFTH_ACCOUNT_AMOUNT, accounts[4].Total_Amount__c, INVALID_AMOUNT_MESSAGE);
-        System.assertEquals(SIXTH_ACCOUNT_AMOUNT, accounts[5].Total_Amount__c, INVALID_AMOUNT_MESSAGE);
+        for(Integer i = accounts.size(), j = 1; i < accounts.size(); i++) {
+            System.assertEquals(300 * j, accounts[i].Total_Amount__c, INVALID_AMOUNT_MESSAGE);
+            j++;
+        }
+
+        for(Integer i = 0, j = accounts.size()/2 + 1; i < accounts.size()/2; i++) {
+            System.assertEquals(300 * j, accounts[i].Total_Amount__c, INVALID_AMOUNT_MESSAGE);
+            j++;
+        }
     }
 }
