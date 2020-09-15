@@ -1,51 +1,35 @@
 public with sharing class TotalAmountService implements Database.Batchable<sObject>, Database.Stateful {
 
-    public Map<Id, Account> resultAccount;
+    public Map<Id, AccountHierarchy> hierarchy;
+    public TotalAmountCalculator amountCalculator;
 
-    public TotalAmountService() {
-        resultAccount = new Map<Id, Account>();
-        List<Account> accounts = [SELECT Id, Total_Amount__c, ParentId, 
-                                    (SELECT Amount, StageName FROM Opportunities WHERE StageName = 'Closed Won')
-                                    FROM Account];
-        for(Account account : accounts) {
-            account.Total_Amount__c = 0;
-            resultAccount.put(account.Id, account);
-        }
+    public TotalAmountService(Map<Id, AccountHierarchy> hierarchyMap) {
+        hierarchy = hierarchyMap;
+        amountCalculator = new TotalAmountCalculator();
     }
 
     public List<Account> start(Database.BatchableContext bc) {
-        return resultAccount.values();
+        List<Account> accounts = new List<Account>();
+        for(AccountHierarchy accountHierarchy: hierarchy.values()) {
+            accounts.add(accountHierarchy.account);
+        }
+        return accounts;
     }
 
     public void execute(Database.BatchableContext bc, List<Account> accounts){
-        System.debug(resultAccount);
 
+        List<Account> results = new List<Account>();
         for (Account account : accounts) {
+            AccountHierarchy node = hierarchy.get(account.Id);
+            amountCalculator.solveTotalAmount(node);
 
-            Account storedAccount = resultAccount.get(account.Id);
-
-            Decimal amount = 0;
-            for(Opportunity opportunity : storedAccount.Opportunities) {
-                amount += opportunity.Amount;
-            }
-            storedAccount.Total_Amount__c += amount; 
-            updateParentAmount(storedAccount, amount);
-            resultAccount.put(account.Id, storedAccount);  
+            results.add(node.account);
+            results.addAll(node.getChilrens());
+            hierarchy.remove(account.Id);
         }
-
+        update results;
     }
 
     public void finish(Database.BatchableContext bc){
-        upsert resultAccount.values();
-    }
-
-    public void updateParentAmount(Account account, Decimal amount) {
-        if(account.ParentId != null) {
-            Account parentAccount = (Account)resultAccount.get(account.ParentId);
-            parentAccount.Total_Amount__c += amount;
-            updateParentAmount(parentAccount, amount);
-            resultAccount.put(account.ParentId, parentAccount); 
-        }
-        resultAccount.put(account.Id, account); 
     }
 }
